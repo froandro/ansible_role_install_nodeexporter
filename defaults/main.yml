@@ -1,0 +1,7 @@
+---
+# defaults file for ansible_role_install_nodeexporter
+
+user: "node_exporter"
+src: "https://github.com/prometheus/node_exporter/releases/download/v1.6.1/node_exporter-1.6.1.linux-amd64.tar.gz"
+dir: "node_exporter-1.6.1.linux-amd64"
+dest: "/tmp"

@@ -1,0 +1,58 @@
+---
+# tasks file for ansible_role_install_nodeexporter
+
+- name: Ensure group "node_exporter" exists
+  become: true
+  ansible.builtin.group:
+    name: "{{ user }}"
+    state: present
+
+- name: Add the user 'node_exporter'
+  become: true
+  ansible.builtin.user:
+    name: "{{ user }}"
+    shell: '/bin/false'
+    create_home: false
+    group: "{{ user }}"
+
+- name: Unarchive a file that needs to be downloaded
+  ansible.builtin.unarchive:
+    src: "{{ src }}" 
+    dest: "{{ dest }}"
+    remote_src: yes
+
+- name: Copy file 'node_exporter' to '/usr/local/bin'
+  become: true
+  ansible.builtin.copy:
+    src: "{{ dest }}/{{ dir }}/{{ item }}"
+    dest: /usr/local/bin/
+    remote_src: yes
+    owner: "{{ user }}"
+    group: "{{ user }}"
+    mode: preserve
+  with_items:
+    - "node_exporter"
+
+- name: Create a systemd unit 'node_exporter.service'
+  become: true
+  ansible.builtin.template:
+    src: "node_exporter.service.j2"
+    dest: "/etc/systemd/system/node_exporter.service"
+    backup: yes
+
+- name: Daemon reload
+  become: true
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Enable service 'node_exporter' and ensure it is started
+  become: true
+  ansible.builtin.systemd:
+    name: node_exporter
+    enabled: true
+    state: started
+
+- name: Delete directory '{{ dest }}/{{ dir }}'
+  ansible.builtin.file:
+    state: absent
+    path: "{{ dest }}/{{ dir }}"   
